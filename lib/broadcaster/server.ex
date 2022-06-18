@@ -1,20 +1,16 @@
-defmodule Broadcaster do
+defmodule Broadcaster.Server do
   require Logger
 
-  @doc """
-  Starts accepting connections on the given `port`.
-  """
   def accept(port) do
-    {:ok, socket} = :gen_tcp.listen(port,
-                      [:binary, packet: :raw, active: true, reuseaddr: true])
-    Logger.info "Accepting connections on port #{port}"
+    {:ok, socket} =
+      :gen_tcp.listen(port, [:binary, packet: :line, active: false, reuseaddr: true])
+    Logger.info("Accepting connections on port #{port}")
     loop_acceptor(socket)
   end
 
   defp loop_acceptor(socket) do
     {:ok, client} = :gen_tcp.accept(socket)
-    {:ok, pid} = Task.Supervisor.start_child(Broadcaster.TaskSupervisor, fn -> serve(client) end)
-    :ok = :gen_tcp.controlling_process(client, pid)
+    serve(client)
     loop_acceptor(socket)
   end
 
