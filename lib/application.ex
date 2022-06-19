@@ -20,37 +20,17 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-defmodule Broadcaster.Server do
-  require Logger
+defmodule Broadcaster do
+  use Application
 
-  def accept(port) do
-    opts = [:binary, packet: :line, active: false, reuseaddr: true]
-    {:ok, socket} = :gen_tcp.listen(port, opts)
-    Logger.info "Accepting connections on port #{port}"
-    loop_acceptor(socket)
-  end
-
-  defp loop_acceptor(socket) do
-    {:ok, client} = :gen_tcp.accept(socket)
-    Task.start_link(fn -> serve(client) end)
-    loop_acceptor(socket)
-  end
-
-  defp serve(socket) do
-
-    line = read_line(socket)
-    write_line(line, socket)
-
-    serve(socket)
-  end
-
-  defp read_line(socket) do
-    {:ok, data} = :gen_tcp.recv(socket, 0)
-    data
-  end
-
-  defp write_line(line, socket) do
-    :gen_tcp.send(socket, line)
-    line
+  @impl true
+  def start(_type, _args) do
+    port = String.to_integer(System.get_env("PORT") || "12800")
+    children = [
+      {Task.Supervisor, name: Broadcaster.TaskSupervisor},
+      Supervisor.child_spec({Task, fn -> Broadcaster.Server.accept(port) end}, restart: :permanent)
+    ]
+    opts = [strategy: :one_for_one, name: Broadcaster.Supervisor]
+    Supervisor.start_link(children, opts)
   end
 end
