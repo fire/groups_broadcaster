@@ -49,6 +49,19 @@ defmodule Broadcaster.Server do
     state = {}
     data = recv_data(socket, state)
     {:ok, result, _rest, _state} = read_data(data, state)
+    # {:ok, {_json, _rest}} = read_string(rest, state)
+    # Logger.info "json is #{json}"
+    # {:ok, command_id, user_data, state}
+    # term = Jason.decode(json, [])
+    # case term do
+    # {:ok, json} ->
+    #   user_name = Map.get(json, @user_name)
+    #   Logger.info "Accepting user name #{user_name}"
+    #   user_color = Map.get(json, @user_color)
+    #   Logger.info "Accepting user color #{user_color}"
+    #   state
+    # {:error, _other} -> state
+    # end
     # :khepri.put("/:broadcaster/:server/alice", "alice@example.org")
     # ret = :khepri.get("/:broadcaster/:server/alice"),
     # write_line(data, socket)
@@ -65,9 +78,9 @@ defmodule Broadcaster.Server do
   end
 
   @spec read_data(any, any) :: {:ok, nil, any, any}
-  def read_data(data, state)  when not is_nil(data) do
+  def read_data(data, state)  when not is_nil(data) and data != "" do
     <<size::signed-little-64, rest::binary>> = data
-    Logger.info "size is #{size}"
+    Logger.debug "size is #{size}"
     <<command_id::signed-little-32, rest::binary>> = rest
     command_id = command_id - 100
     Logger.info "command_id is #{command_id}"
@@ -76,19 +89,6 @@ defmodule Broadcaster.Server do
     <<user_data::little-binary-size(size), rest::binary>> = rest
     Logger.info "Line message #{user_data}"
     read_data(rest, state)
-    # {:ok, {_json, _rest}} = read_string(rest, state)
-    # Logger.info "json is #{json}"
-    # {:ok, command_id, user_data, state}
-    # term = Jason.decode(json, [])
-    # case term do
-    # {:ok, json} ->
-    #   user_name = Map.get(json, @user_name)
-    #   Logger.info "Accepting user name #{user_name}"
-    #   user_color = Map.get(json, @user_color)
-    #   Logger.info "Accepting user color #{user_color}"
-    #   state
-    # {:error, _other} -> state
-    # end
   end
 
   def read_data(data, state) do
