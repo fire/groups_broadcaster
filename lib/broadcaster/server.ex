@@ -48,9 +48,7 @@ defmodule Broadcaster.Server do
   defp serve(socket) do
     state = {}
     data = recv_data(socket, state)
-    {:ok, {data}, _state} = read_data(data, state)
-    {:ok, {data}, _state} = read_data(data, state)
-    Logger.info "Line message #{data}"
+    {:ok, result, _rest, _state} = read_data(data, state)
     # :khepri.put("/:broadcaster/:server/alice", "alice@example.org")
     # ret = :khepri.get("/:broadcaster/:server/alice"),
     # write_line(data, socket)
@@ -60,27 +58,29 @@ defmodule Broadcaster.Server do
   def read_string(data, state) do
     <<length::native-integer, rest::binary>> = data
     string = ""
-    if length do
+    if is_number(length) and length > 0 do
       <<length::native-integer, ^string::binary-size(length), ^rest::binary>> = data
     end
-    {:ok, {string, rest}, state}
+    {:ok, string, rest, state}
   end
 
-  def read_integer(data, state) do
-    <<integer::native-integer, rest::binary>> = data
-    {:ok, {integer, rest}, state}
+  def read_integer_64(data, state) do
+    <<integer::signed-big-integer-size(8), rest::binary>> = data
+    {:ok, integer, rest, state}
   end
 
-  def read_data(data, state) do
-    {:ok, {size, rest}, state} = read_integer(data, state)
+  def read_data(data, state)  when not is_nil(data) do
+    {:ok, size, rest, state} = read_integer_64(data, state)
     Logger.info "size is #{size}"
-    {:ok, {command_id, rest}, state} = read_integer(rest, state)
+    {:ok, command_id, rest, state} = read_integer_64(rest, state)
     Logger.info "command_id is #{command_id}"
-    {:ok, {mtype, _rest}, state} = read_integer(rest, state)
+    {:ok, mtype, rest, state} = read_integer_64(rest, state)
     Logger.info "mtype is #{mtype}"
+    Logger.info "Line message #{data}"
+    read_data(rest, state)
     # {:ok, {_json, _rest}} = read_string(rest, state)
     # Logger.info "json is #{json}"
-    {:ok, {rest}, state}
+    {:ok, {nil, nil}, state}
     # term = Jason.decode(json, [])
     # case term do
     # {:ok, json} ->
@@ -91,6 +91,10 @@ defmodule Broadcaster.Server do
     #   state
     # {:error, _other} -> state
     # end
+  end
+
+  def read_data(data, state) do
+    {:ok, nil, data, state}
   end
 
   def recv_data(socket, state) do
