@@ -48,8 +48,8 @@ defmodule Broadcaster.Server do
   defp serve(socket) do
     read_line(socket)
     |> read_json
-    # :khepri.put("/:broadcaster/alice", "alice@example.org")
-    # ret = :khepri.get("/:broadcaster/alice"),
+    # :khepri.put("/:broadcaster/:server/alice", "alice@example.org")
+    # ret = :khepri.get("/:broadcaster/:server/alice"),
     # write_line(line, socket)
     serve(socket)
   end
