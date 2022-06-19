@@ -32,9 +32,9 @@ defmodule Broadcaster.Server do
   @delete_room 7
 
   def accept(port) do
-    opts = [:inet, :binary, packet: :raw, active: false, reuseaddr: true]
+    opts = [:binary, packet: :raw, active: false, reuseaddr: true]
     {:ok, socket} = :gen_tcp.listen(port, opts)
-    :khepri.start()
+    # :khepri.start()
     Logger.info "Accepting connections on port #{port}"
     loop_acceptor(socket)
   end
@@ -46,29 +46,55 @@ defmodule Broadcaster.Server do
   end
 
   defp serve(socket) do
-    read_line(socket)
-    |> read_json
+    state = {}
+    data = recv_data(socket, state)
+    {:ok, {data}, _state} = read_data(data, state)
+    {:ok, {data}, _state} = read_data(data, state)
+    Logger.info "Line message #{data}"
     # :khepri.put("/:broadcaster/:server/alice", "alice@example.org")
     # ret = :khepri.get("/:broadcaster/:server/alice"),
-    # write_line(line, socket)
+    # write_line(data, socket)
     serve(socket)
   end
 
-  def read_json(line) do
-    term = Jason.decode(line, [])
-    case term do
-    {:ok, json} ->
-      user_name = Map.get(json, @user_name)
-      Logger.info "Accepting user name #{user_name}"
-      user_color = Map.get(json, @user_color)
-      Logger.info "Accepting user color #{user_color}"
+  def read_string(data, state) do
+    <<length::native-integer, rest::binary>> = data
+    string = ""
+    if length do
+      <<length::native-integer, ^string::binary-size(length), ^rest::binary>> = data
     end
+    {:ok, {string, rest}, state}
   end
 
-  defp read_line(socket) do
+  def read_integer(data, state) do
+    <<integer::native-integer, rest::binary>> = data
+    {:ok, {integer, rest}, state}
+  end
+
+  def read_data(data, state) do
+    {:ok, {size, rest}, state} = read_integer(data, state)
+    Logger.info "size is #{size}"
+    {:ok, {command_id, rest}, state} = read_integer(rest, state)
+    Logger.info "command_id is #{command_id}"
+    {:ok, {mtype, _rest}, state} = read_integer(rest, state)
+    Logger.info "mtype is #{mtype}"
+    # {:ok, {_json, _rest}} = read_string(rest, state)
+    # Logger.info "json is #{json}"
+    {:ok, {rest}, state}
+    # term = Jason.decode(json, [])
+    # case term do
+    # {:ok, json} ->
+    #   user_name = Map.get(json, @user_name)
+    #   Logger.info "Accepting user name #{user_name}"
+    #   user_color = Map.get(json, @user_color)
+    #   Logger.info "Accepting user color #{user_color}"
+    #   state
+    # {:error, _other} -> state
+    # end
+  end
+
+  def recv_data(socket, state) do
     {:ok, data} = :gen_tcp.recv(socket, 0)
-    IO.inspect data
-    Logger.info "Line message #{data}"
     data
   end
 
