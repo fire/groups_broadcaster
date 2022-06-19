@@ -1,0 +1,8 @@
+%{
+  "aten": {:hex, :aten, "0.5.8", "b5c97f48517c4f37f26a519aa57a00a31ff1b8ea4324ec1cae27f818ed5c0db2", [:rebar3], [], "hexpm", "64d40a8cf0ddfea4e13af00b7327f0925147f83612d0627d9506cbffe90c13ef"},
+  "gen_batch_server": {:hex, :gen_batch_server, "0.8.8", "7840a1fa63ee1effc83e8a91d22664847a2ba1192d30eafffd914acb51578068", [:rebar3], [], "hexpm", "c3e6a1a2a0fb62aee631a98cfa0fd8903e9562422cbf72043953e2fb1d203017"},
+  "jason": {:hex, :jason, "1.3.0", "fa6b82a934feb176263ad2df0dbd91bf633d4a46ebfdffea0c8ae82953714946", [:mix], [{:decimal, "~> 1.0 or ~> 2.0", [hex: :decimal, repo: "hexpm", optional: true]}], "hexpm", "53fc1f51255390e0ec7e50f9cb41e751c260d065dcba2bf0d08dc51a4002c2ac"},
+  "khepri": {:hex, :khepri, "0.4.1", "128e9e1d1e230735d0933348650f693398c0331fe01aac39c2dd9baa3ded3c34", [:mix, :rebar3], [{:ra, "2.1.0", [hex: :ra, repo: "hexpm", optional: false]}], "hexpm", "3a0c838a070289f74ff1c5a087d76aa2ebebff6811ffc9678378fbc4c5a4a6b9"},
+  "ra": {:hex, :ra, "2.1.0", "a58527f480ccc8af68b5041b76dd6cf46b3202759d3d63567720212416bf744c", [:rebar3], [{:aten, "0.5.8", [hex: :aten, repo: "hexpm", optional: false]}, {:gen_batch_server, "0.8.8", [hex: :gen_batch_server, repo: "hexpm", optional: false]}, {:seshat, "0.3.2", [hex: :seshat, repo: "hexpm", optional: false]}], "hexpm", "24001b370c23690af3fe42ddca353c71c45d1edc1a0e56f9c1bf30bd4c37d14e"},
+  "seshat": {:hex, :seshat, "0.3.2", "16cf14e92aecb927d8840387b97a362d0781997a906d0f3bbb274eb0ec3d74d9", [:rebar3], [], "hexpm", "20d820acbeef9d07298ee863d0c9d06f8e620acba100939ebb2925e4d6b0dfc7"},
+}

@@ -28,7 +28,7 @@ defmodule Broadcaster do
     port = String.to_integer(System.get_env("PORT") || "12800")
     children = [
       {Task.Supervisor, name: Broadcaster.TaskSupervisor},
-      Supervisor.child_spec({Task, fn -> Broadcaster.Server.accept(port) end}, restart: :permanent)
+      Supervisor.child_spec({Task, fn -> Broadcaster.Server.accept(port) end}, restart: :permanent, id: :broadcaster_server),
     ]
     opts = [strategy: :one_for_one, name: Broadcaster.Supervisor]
     Supervisor.start_link(children, opts)

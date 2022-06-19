@@ -22,10 +22,19 @@
 
 defmodule Broadcaster.Server do
   require Logger
+  @user_name "user_name"
+  @user_color "user_color"
+  @join_room 1
+  @leave_room 3
+  @list_rooms 4
+  @content 5 # Server: ask client to send initial room content; Client: notify server content has been sent
+  @clear_content 6 # Server: ask client to clear its own content before room content is sent
+  @delete_room 7
 
   def accept(port) do
-    opts = [:binary, packet: :raw, active: false, reuseaddr: true]
+    opts = [:inet, :binary, packet: :raw, active: false, reuseaddr: true]
     {:ok, socket} = :gen_tcp.listen(port, opts)
+    :khepri.start()
     Logger.info "Accepting connections on port #{port}"
     loop_acceptor(socket)
   end
@@ -37,19 +46,29 @@ defmodule Broadcaster.Server do
   end
 
   defp serve(socket) do
-
-    line = read_line(socket)
-    port = 13800
-    opt = []
-    {:ok, socket_send} = :gen_tcp.connect({127, 0, 0, 1}, port, opt)
-    Logger.info "Forwarding connections on port #{port}"
-    Logger.info "Forwarding message #{line}"
-    write_line(line, socket_send)
+    read_line(socket)
+    |> read_json
+    # :khepri.put("/:broadcaster/alice", "alice@example.org")
+    # ret = :khepri.get("/:broadcaster/alice"),
+    # write_line(line, socket)
     serve(socket)
+  end
+
+  def read_json(line) do
+    term = Jason.decode(line, [])
+    case term do
+    {:ok, json} ->
+      user_name = Map.get(json, @user_name)
+      Logger.info "Accepting user name #{user_name}"
+      user_color = Map.get(json, @user_color)
+      Logger.info "Accepting user color #{user_color}"
+    end
   end
 
   defp read_line(socket) do
     {:ok, data} = :gen_tcp.recv(socket, 0)
+    IO.inspect data
+    Logger.info "Line message #{data}"
     data
   end
 
