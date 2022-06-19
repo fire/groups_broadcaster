@@ -64,23 +64,21 @@ defmodule Broadcaster.Server do
     {:ok, string, rest, state}
   end
 
-  def read_integer_64(data, state) do
-    <<integer::signed-big-integer-size(8), rest::binary>> = data
-    {:ok, integer, rest, state}
-  end
-
+  @spec read_data(any, any) :: {:ok, nil, any, any}
   def read_data(data, state)  when not is_nil(data) do
-    {:ok, size, rest, state} = read_integer_64(data, state)
+    <<size::signed-little-64, rest::binary>> = data
     Logger.info "size is #{size}"
-    {:ok, command_id, rest, state} = read_integer_64(rest, state)
+    <<command_id::signed-little-32, rest::binary>> = rest
+    command_id = command_id - 100
     Logger.info "command_id is #{command_id}"
-    {:ok, mtype, rest, state} = read_integer_64(rest, state)
+    <<mtype::signed-little-16, rest::binary>> = rest
     Logger.info "mtype is #{mtype}"
-    Logger.info "Line message #{data}"
+    <<user_data::little-binary-size(size), rest::binary>> = rest
+    Logger.info "Line message #{user_data}"
     read_data(rest, state)
     # {:ok, {_json, _rest}} = read_string(rest, state)
     # Logger.info "json is #{json}"
-    {:ok, {nil, nil}, state}
+    # {:ok, command_id, user_data, state}
     # term = Jason.decode(json, [])
     # case term do
     # {:ok, json} ->
