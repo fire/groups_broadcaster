@@ -24,7 +24,7 @@ defmodule Broadcaster.Server do
   require Logger
 
   def accept(port) do
-    opts = [:binary, packet: :line, active: false, reuseaddr: true]
+    opts = [:binary, packet: :raw, active: false, reuseaddr: true]
     {:ok, socket} = :gen_tcp.listen(port, opts)
     Logger.info "Accepting connections on port #{port}"
     loop_acceptor(socket)
@@ -39,8 +39,12 @@ defmodule Broadcaster.Server do
   defp serve(socket) do
 
     line = read_line(socket)
-    write_line(line, socket)
-
+    port = 13800
+    opt = []
+    {:ok, socket_send} = :gen_tcp.connect({127, 0, 0, 1}, port, opt)
+    Logger.info "Forwarding connections on port #{port}"
+    Logger.info "Forwarding message #{line}"
+    write_line(line, socket_send)
     serve(socket)
   end
 
